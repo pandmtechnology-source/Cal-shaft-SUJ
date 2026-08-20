@@ -1,7 +1,3 @@
-export const config = {
-  matcher: '/:path*',
-};
-
 export default function middleware(request) {
   const authHeader = request.headers.get('authorization');
 
