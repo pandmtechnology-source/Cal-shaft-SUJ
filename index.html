@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM คิดราคาเพลา SUJ2-LV</title>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background-color: #f3f4f6; color: #1f2937; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        h1 { color: #374151; margin: 0 0 5px 0; font-size: 24px; }
+        p { color: #6b7280; margin: 0; font-size: 14px; }
+        .section-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; color: #4b5563; display: flex; align-items: center; gap: 10px; }
+        .badge { background: #3b82f6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
+        label { display: block; font-size: 12px; font-weight: bold; color: #6b7280; margin-bottom: 5px; }
+        
+        input, select { box-sizing: border-box; width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-weight: bold; background: white; }
+        input[readonly] { background: #e5e7eb; color: #4b5563; cursor: not-allowed; }
+        
+        .grid-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .result-card { padding: 12px; border-radius: 8px; text-align: center; font-size: 12px; font-weight: 500; border: 1px solid #e5e7eb; }
+        .result-card span { display: block; font-size: 16px; font-weight: bold; margin-top: 5px; }
+        .bg-mm { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+        .bg-lv { background: #fef9c3; color: #713f12; border-color: #fef08a; }
+        .bg-newmac { background: #ffedd5; color: #7c2d12; border-color: #fed7aa; }
+        .bg-total { background: #dbeafe; color: #1e3a8a; border-color: #bfdbfe; }
+        .bg-vat { background: #f3e8ff; color: #581c87; border-color: #e9d5ff; }
+        .bg-profit { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+        .btn-add { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+        .btn-add:hover { background: #1d4ed8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: center; }
+        th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f3f4f6; color: #4b5563; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        .font-bold { font-weight: bold; }
+        .text-blue { color: #2563eb; }
+        .text-green { color: #16a34a; }
+        .text-purple { color: #7c3aed; }
+        .btn-delete { background: #fee2e2; color: #dc2626; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .btn-delete:hover { background: #fca5a5; }
+        .toggle-btn { background: none; border: none; width: 100%; text-align: left; font-size: 16px; font-weight: bold; color: #374151; cursor: pointer; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <h1>ระบบคำนวณราคา เพลา SUJ2 Linear-LV </h1>
+            <p>By P and M Technology </p>
+        </header>
+
+        <!-- ส่วนที่ 1: ฟอร์มคำนวณหลัก -->
+        <div class="section-box">
+            <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย</h2>
+            
+            <div class="grid-inputs">
+                <div>
+                    <label>เลือกขนาดสินค้า(Dia)</label>
+                    <select id="inputDid" onchange="updateCostByDia()">
+                        <!-- ตัวเลือกขนาดจะถูกใส่เข้ามาที่นี่โดยอัตโนมัติ -->
+                    </select>
+                </div>
+                <div>
+                    <label>ราคาทุนอ้างอิง LV (บาท/เมตร)</label>
+                    <input type="number" id="refCostPerMeter" readonly>
+                </div>
+                <div>
+                    <label>บวก % กำไร</label>
+                    <input type="number" id="markupPercent" value="40" oninput="calculateOutputs(); renderRefTable();">
+                </div>
+                <div>
+                    <label>ตัดความยาวที่ต้องการ (มม.)</label>
+                    <input type="number" id="inputLength" value="500" oninput="calculateOutputs()">
+                </div>
+                <div>
+                    <label>จำนวนที่สั่งซื้อ (ชิ้น)</label>
+                    <input type="number" id="inputQty" value="1" oninput="calculateOutputs()">
+                </div>
+            </div>
+
+            <!-- กล่องสรุปราคาอัตโนมัติ -->
+            <div class="grid-results">
+                <div class="result-card bg-mm">ราคาขาย / มม.<span id="resPricePerMm">-</span></div>
+                <div class="result-card bg-total">ราคาขาย ก่อน VAT<span id="resTotalSell" style="font-size:18px;">-</span></div>
+                <div class="result-card bg-vat">ขายรวม VAT 7%<span id="resWithVat">-</span></div>
+                <div class="result-card bg-profit">กำไรรวม(ก่อน VAT)<span id="resProfit">-</span></div>
+            </div>
+
+            <button onclick="addOrderRow()" class="btn-add">➕ บันทึกรายการลงตารางสรุปด้านล่าง</button>
+        </div>
+
+        <!-- ส่วนที่ 2: ตารางประวัติการบันทึกรายการซื้อขาย -->
+        <div class="section-box">
+            <h2>📋 ตารางสรุปรายการซื้อขายจริง</h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Did</th> <th>ความยาว (มม.)</th> <th>ทุน/เมตร</th> <th>จำนวน</th> <th>ราคาก่อน VAT</th> <th>ราคารวม VAT</th> <th>กำไรก่อน VAT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <tr id="emptyRow" style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#f9fafb; font-weight:bold; border-top:2px solid #9ca3af;">
+                            <td colspan="4" style="text-align:right; padding:10px;">ยอดรวมทั้งสิ้น (Grand Total):</td>
+                            <td id="grandTotalSell" class="text-blue" style="font-size:16px;">-</td>
+                            <td id="grandTotalVat" class="text-blue" style="font-size:16px;">-</td>
+                            <td id="grandTotalProfit" class="text-green" style="font-size:16px;">-</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- ส่วนที่ 3: ตารางอ้างอิงราคาขายต่อเมตร -->
+        <div class="section-box">
+            <button onclick="toggleRefTable()" class="toggle-btn">
+                <span>📊 ตารางอ้างอิงราคาขายต่อเมตร (ปรับเปลี่ยนตาม % กำไรอัตโนมัติ)</span>
+                <span id="toggleIcon">🔽 คลิกเพื่อเปิดดู</span>
+            </button>
+            <div id="refTableWrapper" style="overflow-x:auto; margin-top:15px; display:none;">
+                <table style="text-align:left;">
+                    <thead>
+                        <tr style="background:#f9fafb;">
+                            <th>Dia</th> <th>บาท/เมตร</th> <th id="markupTableHeader">บวกเพิ่ม (40%)</th> <th class="text-blue">ราคาขาย/เมตร</th>
+                        </tr>
+                    </thead>
+                    <tbody id="refTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        // === อาร์เรย์ข้อมูลราคาทุนอ้างอิง ===
+        const refPrices = [
+            { dia: 6, price: 390 }, { dia: 8, price: 440 }, { dia: 10, price: 460 },
+            { dia: 12, price: 490 }, { dia: 13, price: 500 }, { dia: 16, price: 570 },
+            { dia: 20, price: 660 }, { dia: 25, price: 940 }, { dia: 30, price: 1210 },
+            { dia: 35, price: 1540 }, { dia: 40, price: 1980 }, { dia: 50, price: 2640 },
+            { dia: 60, price: 3740 }, { dia: 70, price: 5500 }, { dia: 80, price: 6400 }
+        ];
+
+        let savedOrders = [];
+
+        // ฟังก์ชันทำงานอัตโนมัติเมื่อหน้าเว็บโหลดเสร็จ
+        window.onload = function() {
+            initDropdown();
+            updateCostByDia();
+            renderRefTable();
+        };
+
+        // 1. ฟังก์ชันสร้าง Dropdown ขนาดสินค้า
+        function initDropdown() {
+            const selectElement = document.getElementById('inputDid');
+            if (!selectElement) return;
+            selectElement.innerHTML = '<option value="">-- เลือกขนาด --</option>'; 
+
+            refPrices.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.dia;
+                option.text = product.dia;
+                selectElement.appendChild(option);
+            });
+        }
+
+        // 2. ฟังก์ชันอัปเดตราคาทุนตามขนาดที่เลือก
+        function updateCostByDia() {
+            const selectElement = document.getElementById('inputDid');
+            const inputCost = document.getElementById('refCostPerMeter');
+            
+            if (!selectElement || !inputCost) return;
+
+            const selectedDia = Number(selectElement.value);
+            const found = refPrices.find(item => item.dia === selectedDia);
+            
+            if (found) {
+                inputCost.value = found.price;
+            } else {
+                inputCost.value = '';
+            }
+            calculateOutputs();
+        }
+
+        // 3. ฟังก์ชันคำนวณราคาอัตโนมัติแบบเรียลไทม์ (ไม่มี LV และ NewMac มารบกวนแล้ว)
+        function calculateOutputs() {
+            const costPerMeter = Number(document.getElementById('refCostPerMeter').value) || 0;
+            const markupPercent = Number(document.getElementById('markupPercent').value) || 0;
+            const lengthMm = Number(document.getElementById('inputLength').value) || 0;
+            const qty = Number(document.getElementById('inputQty').value) || 0;
+
+            const priceMmElement = document.getElementById('resPricePerMm');
+            const totalSellElement = document.getElementById('resTotalSell');
+            const withVatElement = document.getElementById('resWithVat');
+            const profitElement = document.getElementById('resProfit');
+
+            if (costPerMeter === 0 || lengthMm === 0 || qty === 0) {
+                clearResults();
+                return;
+            }
+
+            // คำนวณตามสูตรคณิตศาสตร์หลัก
+            const sellPricePerMeter = costPerMeter * (1 + (markupPercent / 100));
+            const pricePerMm = sellPricePerMeter / 1000;
+            
+            const totalSell = pricePerMm * lengthMm * qty;
+            const totalWithVat = totalSell * 1.07;
+            
+            const totalCost = (costPerMeter / 1000) * lengthMm * qty;
+            const profit = totalSell - totalCost;
+
+            // พิมพ์ตัวเลขแสดงผลลงบนการ์ดแต่ละใบ
+            if (priceMmElement) priceMmElement.textContent = pricePerMm.toFixed(4);
+            if (totalSellElement) totalSellElement.textContent = totalSell.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (withVatElement) withVatElement.textContent = totalWithVat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (profitElement) profitElement.textContent = profit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function clearResults() {
+            const ids = ['resPricePerMm', 'resTotalSell', 'resWithVat', 'resProfit'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '-';
+            });
+        }
+
+        // 4. ฟังก์ชันบันทึกข้อมูลลงตารางประวัติสรุปด้านล่าง
+        function addOrderRow() {
+            const selectElement = document.getElementById('inputDid');
+            const dia = selectElement.value;
+            const cost = Number(document.getElementById('refCostPerMeter').value) || 0;
+            const length = Number(document.getElementById('inputLength').value) || 0;
+            const qty = Number(document.getElementById('inputQty').value) || 0;
+
+            if (!dia || cost === 0) {
+                alert('กรุณาเลือกขนาดสินค้าก่อนบันทึกรายการ!');
+                return;
+            }
+
+            const markupPercent = Number(document.getElementById('markupPercent').value) || 0;
+            const sellPricePerMeter = cost * (1 + (markupPercent / 100));
+            const pricePerMm = sellPricePerMeter / 1000;
+
+            const totalSell = pricePerMm * length * qty;
+            const totalWithVat = totalSell * 1.07;
+            const totalCost = (cost / 1000) * length * qty;
+            const profit = totalSell - totalCost;
+
+            const order = { dia, length, cost, qty, totalSell, totalWithVat, profit };
+            savedOrders.push(order);
+
+            updateOrderTable();
+        }
+
+        function updateOrderTable() {
+            const tbody = document.getElementById('orderTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (savedOrders.length === 0) {
+                tbody.innerHTML = `<tr id="emptyRow" style="color:#9ca3af;"><td colspan="8" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>`;
+                document.getElementById('grandTotalSell').textContent = '-';
+                document.getElementById('grandTotalVat').textContent = '-';
+                document.getElementById('grandTotalProfit').textContent = '-';
+                return;
+            }
+
+            let grandTotalSell = 0;
+            let grandTotalVat = 0;
+            let grandTotalProfit = 0;
+
+            savedOrders.forEach((order, index) => {
+                grandTotalSell += order.totalSell;
+                grandTotalVat += order.totalWithVat;
+                grandTotalProfit += order.profit;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.dia}</td>
+                    <td>${order.length}</td>
+                    <td>${order.cost.toLocaleString()}</td>
+                    <td>${order.qty}</td>
+                    <td class="text-blue font-bold">${order.totalSell.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td>${order.totalWithVat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td class="text-green font-bold">${order.profit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td><button onclick="deleteOrder(${index})" class="btn-delete">❌ ลบ</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('grandTotalSell').textContent = grandTotalSell.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('grandTotalVat').textContent = grandTotalVat.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('grandTotalProfit').textContent = grandTotalProfit.toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
+
+        function deleteOrder(index) {
+            savedOrders.splice(index, 1);
+            updateOrderTable();
+        }
+
+        // 5. ฟังก์ชันสร้างตารางอ้างอิงราคาขายต่อเมตร (ล่างสุด)
+        function renderRefTable() {
+            const tbodyRef = document.getElementById('refTableBody');
+            const markupPercent = Number(document.getElementById('markupPercent').value) || 0;
+            
+            if (!tbodyRef) return;
+            
+            const header = document.getElementById('markupTableHeader');
+            if (header) header.textContent = `บวกเพิ่ม (${markupPercent}%)`;
+            
+            tbodyRef.innerHTML = '';
+
+            refPrices.forEach(item => {
+                const markup = item.price * (markupPercent / 100);
+                const totalPrice = item.price + markup;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: bold; text-align: center; padding: 8px;">${item.dia}</td>
+                    <td style="text-align: right; padding: 8px;">${item.price.toLocaleString()}</td>
+                    <td style="text-align: right; padding: 8px; color: #6b7280;">${markup.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="text-blue" style="font-weight: bold; text-align: right; padding: 8px;">${totalPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                `;
+                tbodyRef.appendChild(row);
+            });
+        }
+
+        // 6. ฟังก์ชัน เปิด/ปิด ตารางอ้างอิงราคาขาย
+        function toggleRefTable() {
+            const wrapper = document.getElementById('refTableWrapper');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (!wrapper || !icon) return;
+
+            if (wrapper.style.display === 'none' || wrapper.style.display === '') {
+                wrapper.style.display = 'block';
+                icon.textContent = '🔼 คลิกเพื่อซ่อน';
+            } else {
+                wrapper.style.display = 'none';
+                icon.textContent = '🔽 คลิกเพื่อเปิดดู';
+            }
+        }
+    </script>
+</body>
+</html>
+
