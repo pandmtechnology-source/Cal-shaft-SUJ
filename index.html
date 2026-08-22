@@ -30,6 +30,28 @@
         .bg-profit { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
         .btn-add { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; }
         .btn-add:hover { background: #1d4ed8; }
+        .btn-reset { padding: 8px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 12px; }
+        .btn-reset:hover { background: #4b5563; }
+        .btn-reset-small { padding: 5px 12px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-weight: normal; font-size: 12px; cursor: pointer; margin-left: auto; }
+        .btn-reset-small:hover { background: #6b7280; }
+
+        .markup-btn-group { display: flex; gap: 6px; }
+        .markup-btn { flex: 1; padding: 8px 0; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+        .markup-btn:hover { background: #f3f4f6; }
+        .markup-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: white; border-radius: 12px; padding: 24px; max-width: 380px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-box p { color: #374151; font-size: 14px; white-space: pre-line; line-height: 1.6; margin: 0 0 20px 0; }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .modal-btn-cancel { background: #e5e7eb; color: #374151; }
+        .modal-btn-cancel:hover { background: #d1d5db; }
+        .modal-btn-confirm { background: #2563eb; color: white; }
+        .modal-btn-confirm:hover { background: #1d4ed8; }
+        .modal-btn-ok { background: #16a34a; color: white; }
+        .modal-btn-ok:hover { background: #15803d; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: center; }
         th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; }
         th { background: #f3f4f6; color: #4b5563; font-weight: 600; font-size: 12px; text-transform: uppercase; }
@@ -53,8 +75,9 @@
     <div class="container">
 
         <header>
-            <h1>ระบบคำนวณราคา เพลา</h1>
+            <h1>ระบบคำนวณราคา </h1>
             <p>By P and M Technology </p>
+            <button onclick="resetAllToDefault()" class="btn-reset">🔄 Reset เป็นค่าเริ่มต้น (ทุกแท็บ)</button>
         </header>
 
         <!-- แท็บเลือกวัสดุ -->
@@ -68,7 +91,7 @@
         <div class="tab-panel active" id="tabContent_suj2">
 
             <div class="section-box">
-                <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย (SUJ Linear)</h2>
+                <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย (SUJ Linear)<button onclick="resetTabToDefault('suj2')" class="btn-reset-small">🔄 Reset แท็บนี้</button></h2>
 
                 <div class="grid-inputs">
                     <div>
@@ -80,8 +103,14 @@
                         <input type="number" id="refCostPerMeter_suj2" readonly>
                     </div>
                     <div>
-                        <label>บวก % กำไร</label>
-                        <input type="number" id="markupPercent_suj2" value="40" oninput="calculateOutputs('suj2'); renderRefTable('suj2');">
+                        <label>บวก % กำไร (จากราคาซื้อ)</label>
+                        <div class="markup-btn-group" id="markupButtons_suj2">
+                            <button type="button" class="markup-btn" data-value="35" onclick="selectMarkup('suj2', 35)">35%</button>
+                            <button type="button" class="markup-btn active" data-value="40" onclick="selectMarkup('suj2', 40)">40%</button>
+                            <button type="button" class="markup-btn" data-value="45" onclick="selectMarkup('suj2', 45)">45%</button>
+                            <button type="button" class="markup-btn" data-value="50" onclick="selectMarkup('suj2', 50)">50%</button>
+                        </div>
+                        <input type="hidden" id="markupPercent_suj2" value="40">
                     </div>
                     <div>
                         <label>ตัดความยาวที่ต้องการ (มม.)</label>
@@ -109,17 +138,18 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Did</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
+                                <th>Did</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>บวก % กำไร</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
                             </tr>
                         </thead>
                         <tbody id="orderTableBody_suj2">
-                            <tr style="color:#9ca3af;"><td colspan="9" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
+                            <tr style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
                         </tbody>
                         <tfoot>
                             <tr style="background:#f9fafb; font-weight:bold; border-top:2px solid #9ca3af;">
                                 <td colspan="2" style="text-align:right; padding:10px;">ยอดรวมทั้งสิ้น (Grand Total):<br><span style="font-weight:normal; font-size:11px; color:#9ca3af;">รวมราคาซื้อก่อนแวท / รวมราคาซื้อรวมแวท</span></td>
                                 <td id="grandTotalCost_suj2" class="text-purple" style="font-size:16px;">-</td>
                                 <td id="grandTotalCostVat_suj2" class="text-purple" style="font-size:16px;">-</td>
+                                <td></td>
                                 <td></td>
                                 <td id="grandTotalSell_suj2" class="text-blue" style="font-size:16px;">-</td>
                                 <td id="grandTotalVat_suj2" class="text-blue" style="font-size:16px;">-</td>
@@ -154,7 +184,7 @@
         <div class="tab-panel" id="tabContent_s45c">
 
             <div class="section-box">
-                <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย (S45C)</h2>
+                <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย (S45C)<button onclick="resetTabToDefault('s45c')" class="btn-reset-small">🔄 Reset แท็บนี้</button></h2>
 
                 <div class="grid-inputs">
                     <div>
@@ -170,8 +200,14 @@
                         <input type="number" id="discountPercent_s45c" value="30" oninput="calculateOutputs('s45c'); renderRefTable('s45c');">
                     </div>
                     <div>
-                        <label>บวก % กำไร</label>
-                        <input type="number" id="markupPercent_s45c" value="10" oninput="calculateOutputs('s45c'); renderRefTable('s45c');">
+                        <label>บวก % กำไร (จากราคาตั้ง)</label>
+                        <div class="markup-btn-group" id="markupButtons_s45c">
+                            <button type="button" class="markup-btn" data-value="5" onclick="selectMarkup('s45c', 5)">5%</button>
+                            <button type="button" class="markup-btn active" data-value="10" onclick="selectMarkup('s45c', 10)">10%</button>
+                            <button type="button" class="markup-btn" data-value="15" onclick="selectMarkup('s45c', 15)">15%</button>
+                            <button type="button" class="markup-btn" data-value="20" onclick="selectMarkup('s45c', 20)">20%</button>
+                        </div>
+                        <input type="hidden" id="markupPercent_s45c" value="10">
                     </div>
                     <div>
                         <label>ตัดความยาวที่ต้องการ (มม.)</label>
@@ -199,17 +235,18 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Did</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
+                                <th>Did</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>บวก % กำไร</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
                             </tr>
                         </thead>
                         <tbody id="orderTableBody_s45c">
-                            <tr style="color:#9ca3af;"><td colspan="9" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
+                            <tr style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
                         </tbody>
                         <tfoot>
                             <tr style="background:#f9fafb; font-weight:bold; border-top:2px solid #9ca3af;">
                                 <td colspan="2" style="text-align:right; padding:10px;">ยอดรวมทั้งสิ้น (Grand Total):<br><span style="font-weight:normal; font-size:11px; color:#9ca3af;">รวมราคาซื้อก่อนแวท / รวมราคาซื้อรวมแวท</span></td>
                                 <td id="grandTotalCost_s45c" class="text-purple" style="font-size:16px;">-</td>
                                 <td id="grandTotalCostVat_s45c" class="text-purple" style="font-size:16px;">-</td>
+                                <td></td>
                                 <td></td>
                                 <td id="grandTotalSell_s45c" class="text-blue" style="font-size:16px;">-</td>
                                 <td id="grandTotalVat_s45c" class="text-blue" style="font-size:16px;">-</td>
@@ -243,7 +280,7 @@
         <div class="tab-panel" id="tabContent_hydraulic">
 
             <div class="section-box">
-                <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย (ท่อไฮดรอลิค)</h2>
+                <h2><span class="badge">คำนวณระบบ</span> เครื่องมือคำนวณยอดขาย (ท่อไฮดรอลิค)<button onclick="resetTabToDefault('hydraulic')" class="btn-reset-small">🔄 Reset แท็บนี้</button></h2>
 
                 <div class="grid-inputs">
                     <div>
@@ -259,8 +296,14 @@
                         <input type="number" id="discountPercent_hydraulic" value="30" oninput="calculateOutputs('hydraulic'); renderRefTable('hydraulic');">
                     </div>
                     <div>
-                        <label>บวก % กำไร</label>
-                        <input type="number" id="markupPercent_hydraulic" value="10" oninput="calculateOutputs('hydraulic'); renderRefTable('hydraulic');">
+                        <label>บวก % กำไร (จากราคาตั้ง)</label>
+                        <div class="markup-btn-group" id="markupButtons_hydraulic">
+                            <button type="button" class="markup-btn" data-value="5" onclick="selectMarkup('hydraulic', 5)">5%</button>
+                            <button type="button" class="markup-btn active" data-value="10" onclick="selectMarkup('hydraulic', 10)">10%</button>
+                            <button type="button" class="markup-btn" data-value="15" onclick="selectMarkup('hydraulic', 15)">15%</button>
+                            <button type="button" class="markup-btn" data-value="20" onclick="selectMarkup('hydraulic', 20)">20%</button>
+                        </div>
+                        <input type="hidden" id="markupPercent_hydraulic" value="10">
                     </div>
                     <div>
                         <label>ตัดความยาวที่ต้องการ (มม.)</label>
@@ -288,17 +331,18 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Did</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
+                                <th>Did</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>บวก % กำไร</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
                             </tr>
                         </thead>
                         <tbody id="orderTableBody_hydraulic">
-                            <tr style="color:#9ca3af;"><td colspan="9" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
+                            <tr style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
                         </tbody>
                         <tfoot>
                             <tr style="background:#f9fafb; font-weight:bold; border-top:2px solid #9ca3af;">
                                 <td colspan="2" style="text-align:right; padding:10px;">ยอดรวมทั้งสิ้น (Grand Total):<br><span style="font-weight:normal; font-size:11px; color:#9ca3af;">รวมราคาซื้อก่อนแวท / รวมราคาซื้อรวมแวท</span></td>
                                 <td id="grandTotalCost_hydraulic" class="text-purple" style="font-size:16px;">-</td>
                                 <td id="grandTotalCostVat_hydraulic" class="text-purple" style="font-size:16px;">-</td>
+                                <td></td>
                                 <td></td>
                                 <td id="grandTotalSell_hydraulic" class="text-blue" style="font-size:16px;">-</td>
                                 <td id="grandTotalVat_hydraulic" class="text-blue" style="font-size:16px;">-</td>
@@ -330,7 +374,7 @@
         </div>
 
         <!-- ============ สรุปรวมทั้งหมด (SUJ2 + S45C) ============ -->
-        <div class="section-box" style="border: 2px solid #2563eb;">
+        <div class="section-box" id="combinedSummaryBox" style="border: 2px solid #2563eb; display:none;">
             <h2>🧮 สรุปรวมยอดขายทั้งหมด (SUJ Linear + S45C + ท่อไฮดรอลิค)</h2>
             <div class="grid-results">
                 <div class="result-card bg-total">ยอดขายรวม ก่อน VAT<span id="combinedSell" style="font-size:18px;">-</span></div>
@@ -351,11 +395,11 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>วัสดุ</th><th>Dia</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
+                            <th>วัสดุ</th><th>Dia</th> <th>ความยาว (มม.)</th> <th>ราคาซื้อก่อนแวท</th> <th>ราคาซื้อรวมแวท</th> <th>จำนวน</th> <th>บวก % กำไร</th> <th>ราคาขายก่อนแวท</th> <th>ราคาขายรวมแวท</th> <th>กำไรก่อน VAT</th>
                         </tr>
                     </thead>
                     <tbody id="combinedDetailRows">
-                        <tr style="color:#9ca3af;"><td colspan="9" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
+                        <tr style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -441,6 +485,124 @@
             updateCombinedSummary();
         };
 
+        // === กล่องยืนยัน/แจ้งเตือน แบบสร้างเอง (แทน confirm()/alert() ของเบราว์เซอร์ ที่อาจถูกบล็อกในบางสภาพแวดล้อม) ===
+        function showConfirmModal(message, onConfirm) {
+            const overlay = document.getElementById('customModal');
+            const messageEl = document.getElementById('modalMessage');
+            const buttonsEl = document.getElementById('modalButtons');
+
+            messageEl.textContent = message;
+            buttonsEl.innerHTML = '';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'ยกเลิก';
+            cancelBtn.className = 'modal-btn-cancel';
+            cancelBtn.onclick = () => { overlay.classList.remove('show'); };
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.textContent = 'ยืนยัน';
+            confirmBtn.className = 'modal-btn-confirm';
+            confirmBtn.onclick = () => { overlay.classList.remove('show'); onConfirm(); };
+
+            buttonsEl.appendChild(cancelBtn);
+            buttonsEl.appendChild(confirmBtn);
+            overlay.classList.add('show');
+        }
+
+        function showAlertModal(message) {
+            const overlay = document.getElementById('customModal');
+            const messageEl = document.getElementById('modalMessage');
+            const buttonsEl = document.getElementById('modalButtons');
+
+            messageEl.textContent = message;
+            buttonsEl.innerHTML = '';
+
+            const okBtn = document.createElement('button');
+            okBtn.textContent = 'ตกลง';
+            okBtn.className = 'modal-btn-ok';
+            okBtn.onclick = () => { overlay.classList.remove('show'); };
+
+            buttonsEl.appendChild(okBtn);
+            overlay.classList.add('show');
+        }
+
+        const defaultSettings = {
+            suj2: { discount: null, markup: 40 },
+            s45c: { discount: 30, markup: 10 },
+            hydraulic: { discount: 30, markup: 10 }
+        };
+
+        const materialLabels = { suj2: 'SUJ Linear', s45c: 'S45C', hydraulic: 'ท่อไฮดรอลิค' };
+
+        // รีเซ็ตวัสดุตัวเดียวกลับเป็นค่าเริ่มต้น (ฟังก์ชันกลาง ไม่มี confirm/alert)
+        // ปุ่มเลือก % กำไรแบบกด (แทนช่องกรอกตัวเลข)
+        function selectMarkup(material, value) {
+            const hiddenInput = document.getElementById(`markupPercent_${material}`);
+            if (hiddenInput) hiddenInput.value = value;
+            setMarkupButtonState(material, value);
+            calculateOutputs(material);
+            renderRefTable(material);
+        }
+
+        function setMarkupButtonState(material, value) {
+            const group = document.getElementById(`markupButtons_${material}`);
+            if (!group) return;
+            Array.from(group.children).forEach(btn => {
+                btn.classList.toggle('active', Number(btn.dataset.value) === Number(value));
+            });
+        }
+
+        function resetMaterialToDefault(m) {
+            // ล้างรายการที่บันทึกไว้
+            savedOrders[m] = [];
+
+            // รีเซ็ตขนาดที่เลือกกลับเป็นค่าว่าง
+            const selectEl = document.getElementById(`inputDid_${m}`);
+            if (selectEl) selectEl.value = '';
+
+            // รีเซ็ตส่วนลด (ถ้ามี)
+            const discountEl = document.getElementById(`discountPercent_${m}`);
+            if (discountEl && defaultSettings[m].discount !== null) discountEl.value = defaultSettings[m].discount;
+
+            // รีเซ็ต % กำไร
+            const markupEl = document.getElementById(`markupPercent_${m}`);
+            if (markupEl) markupEl.value = defaultSettings[m].markup;
+            setMarkupButtonState(m, defaultSettings[m].markup);
+
+            // รีเซ็ตความยาวและจำนวน
+            const lengthEl = document.getElementById(`inputLength_${m}`);
+            if (lengthEl) lengthEl.value = 500;
+            const qtyEl = document.getElementById(`inputQty_${m}`);
+            if (qtyEl) qtyEl.value = 1;
+
+            updateCostByDia(m);
+            renderRefTable(m);
+            updateOrderTable(m);
+        }
+
+        // ปุ่ม Reset หลัก: รีเซ็ตทุกแท็บ
+        function resetAllToDefault() {
+            showConfirmModal(
+                'ยืนยันการ Reset เป็นค่าเริ่มต้นของทุกแท็บ?\n\nระบบจะลบรายการที่บันทึกไว้ทุกรายการในทุกวัสดุ (SUJ Linear, S45C, ท่อไฮดรอลิค) และตั้งค่าต่างๆ กลับเป็นค่าเริ่มต้น การกระทำนี้ไม่สามารถย้อนกลับได้',
+                () => {
+                    ['suj2', 's45c', 'hydraulic'].forEach(m => resetMaterialToDefault(m));
+                    switchTab('suj2');
+                    updateCombinedSummary();
+                }
+            );
+        }
+
+        // ปุ่ม Reset ย่อย: รีเซ็ตเฉพาะแท็บที่เลือก
+        function resetTabToDefault(material) {
+            showConfirmModal(
+                `ยืนยันการ Reset แท็บ "${materialLabels[material]}" เป็นค่าเริ่มต้น?\n\nระบบจะลบรายการที่บันทึกไว้ในแท็บนี้ และตั้งค่ากลับเป็นค่าเริ่มต้น การกระทำนี้ไม่สามารถย้อนกลับได้`,
+                () => {
+                    resetMaterialToDefault(material);
+                    updateCombinedSummary();
+                }
+            );
+        }
+
         // สลับแท็บ
         function switchTab(material) {
             ['suj2', 's45c', 'hydraulic'].forEach(m => {
@@ -501,7 +663,7 @@
                 return;
             }
 
-            const sellPricePerMeter = effectiveCost * (1 + (markupPercent / 100));
+            const sellPricePerMeter = costPerMeter * (1 + (markupPercent / 100));
             const pricePerMm = sellPricePerMeter / 1000;
 
             const totalSell = pricePerMm * lengthMm * qty;
@@ -541,7 +703,7 @@
             const discountEl = document.getElementById(`discountPercent_${material}`);
             const discountPercent = discountEl ? (Number(discountEl.value) || 0) : 0;
             const effectiveCost = cost * (1 - discountPercent / 100);
-            const sellPricePerMeter = effectiveCost * (1 + (markupPercent / 100));
+            const sellPricePerMeter = cost * (1 + (markupPercent / 100));
             const pricePerMm = sellPricePerMeter / 1000;
 
             const totalSell = pricePerMm * length * qty;
@@ -549,7 +711,7 @@
             const totalCost = (effectiveCost / 1000) * length * qty;
             const profit = totalSell - totalCost;
 
-            const order = { dia, length, cost: effectiveCost, qty, totalSell, totalWithVat, profit, totalCost, totalCostWithVat: totalCost * 1.07 };
+            const order = { dia, length, cost: effectiveCost, qty, totalSell, totalWithVat, profit, totalCost, totalCostWithVat: totalCost * 1.07, markupPercent };
             savedOrders[material].push(order);
 
             updateOrderTable(material);
@@ -563,7 +725,7 @@
             const orders = savedOrders[material];
 
             if (orders.length === 0) {
-                tbody.innerHTML = `<tr style="color:#9ca3af;"><td colspan="9" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>`;
+                tbody.innerHTML = `<tr style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>`;
                 document.getElementById(`grandTotalCost_${material}`).textContent = '-';
                 document.getElementById(`grandTotalCostVat_${material}`).textContent = '-';
                 document.getElementById(`grandTotalSell_${material}`).textContent = '-';
@@ -593,6 +755,7 @@
                     <td>${order.totalCost.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td>${order.totalCostWithVat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td>${order.qty}</td>
+                    <td>${order.markupPercent}%</td>
                     <td class="text-blue font-bold">${order.totalSell.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td>${order.totalWithVat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td class="text-green font-bold">${order.profit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
@@ -610,12 +773,17 @@
         }
 
         // สรุปรวมยอดขายทั้งหมดของทุกวัสดุ
-        const materialLabels = { suj2: 'SUJ Linear', s45c: 'S45C', hydraulic: 'ท่อไฮดรอลิค' };
 
         function updateCombinedSummary() {
             let totalSell = 0, totalVat = 0, totalProfit = 0;
             const breakdownBody = document.getElementById('combinedBreakdown');
             const detailBody = document.getElementById('combinedDetailRows');
+            const summaryBox = document.getElementById('combinedSummaryBox');
+
+            const totalOrderCount = savedOrders.suj2.length + savedOrders.s45c.length + savedOrders.hydraulic.length;
+            if (summaryBox) {
+                summaryBox.style.display = totalOrderCount === 0 ? 'none' : 'block';
+            }
             if (!breakdownBody || !detailBody) return;
             breakdownBody.innerHTML = '';
             detailBody.innerHTML = '';
@@ -632,15 +800,17 @@
                 totalVat += vat;
                 totalProfit += profit;
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="font-bold">${materialLabels[m]}</td>
-                    <td>${orders.length}</td>
-                    <td class="text-blue">${sell.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                    <td>${vat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                    <td class="text-green">${profit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                `;
-                breakdownBody.appendChild(row);
+                if (orders.length > 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="font-bold">${materialLabels[m]}</td>
+                        <td>${orders.length}</td>
+                        <td class="text-blue">${sell.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td>${vat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="text-green">${profit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    `;
+                    breakdownBody.appendChild(row);
+                }
 
                 orders.forEach(order => {
                     hasAnyOrder = true;
@@ -652,6 +822,7 @@
                         <td>${order.totalCost.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                         <td>${order.totalCostWithVat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                         <td>${order.qty}</td>
+                        <td>${order.markupPercent}%</td>
                         <td class="text-blue font-bold">${order.totalSell.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                         <td>${order.totalWithVat.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                         <td class="text-green font-bold">${order.profit.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
@@ -661,7 +832,7 @@
             });
 
             if (!hasAnyOrder) {
-                detailBody.innerHTML = `<tr style="color:#9ca3af;"><td colspan="9" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>`;
+                detailBody.innerHTML = `<tr style="color:#9ca3af;"><td colspan="10" style="padding:30px;">ยังไม่มีรายการสินค้าถูกเพิ่มเข้ามา</td></tr>`;
             }
 
             document.getElementById('combinedSell').textContent = totalSell.toLocaleString(undefined, {minimumFractionDigits: 2});
@@ -689,9 +860,8 @@
             tbodyRef.innerHTML = '';
 
             materialsData[material].forEach(item => {
-                const effectiveCost = item.price * (1 - discountPercent / 100);
-                const markup = effectiveCost * (markupPercent / 100);
-                const totalPrice = effectiveCost + markup;
+                const markup = item.price * (markupPercent / 100);
+                const totalPrice = item.price + markup;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -720,5 +890,14 @@
             }
         }
     </script>
+
+    <!-- กล่องยืนยัน / แจ้งเตือน แบบสร้างเอง (ไม่ใช้ confirm()/alert() ของเบราว์เซอร์) -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box">
+            <p id="modalMessage"></p>
+            <div class="modal-buttons" id="modalButtons"></div>
+        </div>
+    </div>
+
 </body>
 </html>
