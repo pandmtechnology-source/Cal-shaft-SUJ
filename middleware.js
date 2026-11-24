@@ -26,13 +26,15 @@ function loginPage(errorMessage) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>เข้าสู่ระบบ</title>
 <style>
-  body { font-family: 'Tahoma', sans-serif; background: #f3f4f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-  .box { background: white; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); width: 100%; max-width: 320px; }
-  h1 { font-size: 18px; color: #374151; margin: 0 0 20px 0; text-align: center; }
-  input { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; margin-bottom: 12px; }
+  :root { color-scheme: dark; }
+  body { font-family: 'Tahoma', sans-serif; background: #0b1120; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  .box { background: #1e293b; border: 1px solid #334155; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.5); width: 100%; max-width: 320px; }
+  h1 { font-size: 18px; color: #f1f5f9; margin: 0 0 20px 0; text-align: center; }
+  input { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #475569; border-radius: 6px; font-size: 14px; margin-bottom: 12px; background: #0f172a; color: #f1f5f9; }
+  input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.35); }
   button { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
   button:hover { background: #1d4ed8; }
-  .error { color: #dc2626; font-size: 13px; margin-bottom: 12px; text-align: center; }
+  .error { color: #f87171; font-size: 13px; margin-bottom: 12px; text-align: center; }
 </style>
 </head>
 <body>
