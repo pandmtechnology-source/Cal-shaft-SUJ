@@ -40,7 +40,13 @@
         .bg-newmac { background: rgba(249,115,22,0.12); color: #fdba74; border-color: rgba(249,115,22,0.35); }
         .bg-total { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.4); }
         .bg-vat { background: rgba(168,85,247,0.15); color: #d8b4fe; border-color: rgba(168,85,247,0.4); }
+        .bg-cost { background: rgba(244,63,94,0.12); color: #fda4af; border-color: rgba(244,63,94,0.35); }
+        .bg-weight { background: rgba(148,163,184,0.14); color: #cbd5e1; border-color: rgba(148,163,184,0.4); }
         .bg-profit { background: rgba(16,185,129,0.13); color: #6ee7b7; border-color: rgba(16,185,129,0.35); }
+        .row-label { font-size: 13px; font-weight: bold; margin: 0 0 8px 0; padding-left: 8px; border-left: 4px solid var(--muted); color: var(--text); }
+        .row-label.buy { border-left-color: #fb7185; }
+        .row-label.sell { border-left-color: #4ade80; }
+        .grid-results.buy-row { margin-bottom: 16px; }
         .vat-line + .vat-line { margin-top: 8px; }
         .btn-set-default { margin-top: 6px; padding: 5px 10px; background: transparent; color: #93c5fd; border: 1px dashed #475569; border-radius: 6px; font-size: 12px; cursor: pointer; }
         .btn-set-default:hover { background: #273449; border-color: #3b82f6; }
@@ -132,6 +138,14 @@
                     </div>
                 </div>
 
+                <div class="row-label buy">🛒 ซื้อ (ต้นทุน)</div>
+                <div class="grid-results buy-row">
+                    <div class="result-card bg-cost"><span class="nw">ราคาทุนที่ซื้อ</span>(ต่อท่อน ก่อน VAT)<span id="resCostPerPiece_suj2">-</span></div>
+                    <div class="result-card bg-weight"><span class="nw">น้ำหนัก</span>(กก./ท่อน)<span id="resWeightPerPiece_suj2">-</span></div>
+                    <div class="result-card bg-weight"><span class="nw">น้ำหนักรวม</span>(ตามจำนวนท่อน, กก.)<span id="resWeightTotal_suj2">-</span></div>
+                </div>
+
+                <div class="row-label sell">💰 ขาย</div>
                 <div class="grid-results">
                     <div class="result-card bg-mm"><span class="nw">ราคาขาย</span>(ต่อชิ้น)<span id="resPricePerMm_suj2">-</span></div>
                     <div class="result-card bg-total"><span class="nw">ราคาขาย</span>ตามจำนวน<span id="resTotalSell_suj2" style="font-size:18px;">-</span></div>
@@ -226,6 +240,14 @@
                     </div>
                 </div>
 
+                <div class="row-label buy">🛒 ซื้อ (ต้นทุน)</div>
+                <div class="grid-results buy-row">
+                    <div class="result-card bg-cost"><span class="nw">ราคาทุนที่ซื้อ</span>(ต่อท่อน ก่อน VAT)<span id="resCostPerPiece_s45c">-</span></div>
+                    <div class="result-card bg-weight"><span class="nw">น้ำหนัก</span>(กก./ท่อน)<span id="resWeightPerPiece_s45c">-</span></div>
+                    <div class="result-card bg-weight"><span class="nw">น้ำหนักรวม</span>(ตามจำนวนท่อน, กก.)<span id="resWeightTotal_s45c">-</span></div>
+                </div>
+
+                <div class="row-label sell">💰 ขาย</div>
                 <div class="grid-results">
                     <div class="result-card bg-mm"><span class="nw">ราคาขาย</span>(ต่อชิ้น)<span id="resPricePerMm_s45c">-</span></div>
                     <div class="result-card bg-total"><span class="nw">ราคาขาย</span>ตามจำนวน<span id="resTotalSell_s45c" style="font-size:18px;">-</span></div>
@@ -319,6 +341,14 @@
                     </div>
                 </div>
 
+                <div class="row-label buy">🛒 ซื้อ (ต้นทุน)</div>
+                <div class="grid-results buy-row">
+                    <div class="result-card bg-cost"><span class="nw">ราคาทุนที่ซื้อ</span>(ต่อท่อน ก่อน VAT)<span id="resCostPerPiece_hydraulic">-</span></div>
+                    <div class="result-card bg-weight"><span class="nw">น้ำหนัก</span>(กก./ท่อน)<span id="resWeightPerPiece_hydraulic">-</span></div>
+                    <div class="result-card bg-weight"><span class="nw">น้ำหนักรวม</span>(ตามจำนวนท่อน, กก.)<span id="resWeightTotal_hydraulic">-</span></div>
+                </div>
+
+                <div class="row-label sell">💰 ขาย</div>
                 <div class="grid-results">
                     <div class="result-card bg-mm"><span class="nw">ราคาขาย</span>(ต่อชิ้น)<span id="resPricePerMm_hydraulic">-</span></div>
                     <div class="result-card bg-total"><span class="nw">ราคาขาย</span>ตามจำนวน<span id="resTotalSell_hydraulic" style="font-size:18px;">-</span></div>
@@ -709,6 +739,21 @@
             calculateOutputs(material);
         }
 
+        // คำนวณน้ำหนักเหล็ก (ความหนาแน่น 7.85 g/cm³ = 7.85e-6 กก./มม.³)
+        // เพลาตัน: π/4 × Dia² × ยาว | ท่อ (ID x OD): π/4 × (OD² − ID²) × ยาว
+        const STEEL_DENSITY_KG_MM3 = 7.85e-6;
+        function getCrossSectionArea(material, diaValue) {
+            const nums = String(diaValue).match(/\d+(?:\.\d+)?/g);
+            if (!nums || nums.length === 0) return 0;
+            if (material === 'hydraulic') {
+                if (nums.length < 2) return 0;
+                const id = Number(nums[0]), od = Number(nums[1]);
+                return Math.PI / 4 * (od * od - id * id);
+            }
+            const d = Number(nums[0]);
+            return Math.PI / 4 * d * d;
+        }
+
         // 3. ฟังก์ชันคำนวณราคาอัตโนมัติแบบเรียลไทม์
         function calculateOutputs(material) {
             const costPerMeter = Number(document.getElementById(`refCostPerMeter_${material}`).value) || 0;
@@ -739,6 +784,13 @@
             const totalCost = (effectiveCost / 1000) * lengthMm * qty;
             const profit = totalSell - totalCost;
 
+            const weightPerPiece = getCrossSectionArea(material, document.getElementById(`inputDid_${material}`).value) * lengthMm * STEEL_DENSITY_KG_MM3;
+            const weightPerPieceEl = document.getElementById(`resWeightPerPiece_${material}`);
+            const weightTotalEl = document.getElementById(`resWeightTotal_${material}`);
+            if (weightPerPieceEl) weightPerPieceEl.textContent = weightPerPiece.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (weightTotalEl) weightTotalEl.textContent = (weightPerPiece * qty).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const costPerPieceElement = document.getElementById(`resCostPerPiece_${material}`);
+            if (costPerPieceElement) costPerPieceElement.textContent = ((effectiveCost / 1000) * lengthMm).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             if (priceMmElement) priceMmElement.textContent = (pricePerMm * lengthMm).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             if (totalSellElement) totalSellElement.textContent = totalSell.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             if (beforeVatElement) beforeVatElement.textContent = totalSell.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -747,7 +799,7 @@
         }
 
         function clearResults(material) {
-            const ids = [`resPricePerMm_${material}`, `resTotalSell_${material}`, `resBeforeVat_${material}`, `resWithVat_${material}`, `resProfit_${material}`];
+            const ids = [`resWeightPerPiece_${material}`, `resWeightTotal_${material}`, `resCostPerPiece_${material}`, `resPricePerMm_${material}`, `resTotalSell_${material}`, `resBeforeVat_${material}`, `resWithVat_${material}`, `resProfit_${material}`];
             ids.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.textContent = '-';
